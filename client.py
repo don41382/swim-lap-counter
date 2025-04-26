@@ -71,6 +71,10 @@ class EufyClient:
                 fps = meta.get("videoFPS") or 15
                 data = bytes(ev.get("buffer", {}).get("data", []))
                 return data, {"width": width, "height": height, "fps": fps}
+            elif msg.get("type") == "event" and msg.get("event", {}).get("event") in ("livestream started","livestream audio data"):
+                pass
+            else:
+                print(f"invalid message: {msg}")
 
     def listen(self, on_data):
         def _feeder():

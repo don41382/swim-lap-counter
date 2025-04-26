@@ -44,10 +44,10 @@ class SwimApp:
                 cv2.putText(
                     out,
                     f"Laps: {self.detector.lap_count}",
-                    (20, 30),
+                    (300, 400),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    (0, 255, 255),
+                    2.0,
+                    (0, 255, 0),
                     2,
                     cv2.LINE_AA,
                 )
