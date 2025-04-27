@@ -12,11 +12,11 @@ class VideoRecorder:
         self.writer.write(frame)
 
     def display(self, frame: np.ndarray):
-        cv2.imshow(self.window_name, frame)
+        # No-op in headless mode
+        pass
 
     def close(self):
         try:
             self.writer.release()
         except Exception:
             pass
-        cv2.destroyAllWindows()

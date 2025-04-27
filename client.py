@@ -1,5 +1,6 @@
 import json
 import threading
+import logging
 import time
 import websocket
 
@@ -86,7 +87,7 @@ class EufyClient:
                         data = bytes(msg["event"]["buffer"].get("data", []))
                         on_data(data)
             except Exception:
-                pass
+                logging.exception("Error in EufyClient listener thread")
 
         threading.Thread(target=_feeder, daemon=True).start()
 
