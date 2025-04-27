@@ -21,7 +21,8 @@ class FFmpegDecoder:
         if self.process.stdin:
             try:
                 self.process.stdin.write(data)
-            except BrokenPipeError:
+            except (BrokenPipeError, ValueError):
+                # ignore broken pipe or write on closed stdin
                 pass
 
     def frames(self, width: int, height: int):

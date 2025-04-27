@@ -99,18 +99,19 @@ class SwimApp:
             print("Streaming started. Use /stop endpoint or 'q'/Ctrl-C to stop.")
 
             # Idle timeout: shutdown if no new laps within 5 minutes
-            last_lap_time = time.time()
-            previous_lap_count = self.detector.lap_count
+            # initialize idle timer and lap counter tracking
+            self._last_lap_time = time.time()
+            self._prev_lap_count = self.detector.lap_count
             for frame in self.decoder.frames(width, height):
                 if self._stop_event.is_set():
                     break
                 out = self.detector.process(frame)
                 # Reset idle timer on new lap
-                if self.detector.lap_count > previous_lap_count:
-                    previous_lap_count = self.detector.lap_count
-                    last_lap_time = time.time()
+                if self.detector.lap_count > self._prev_lap_count:
+                    self._prev_lap_count = self.detector.lap_count
+                    self._last_lap_time = time.time()
                 # Idle shutdown
-                elif time.time() - last_lap_time > 5 * 60:
+                elif time.time() - self._last_lap_time > 5 * 60:
                     print("No laps detected in the last 5 minutes, shutting down.")
                     break
                 cv2.putText(
@@ -133,7 +134,14 @@ class SwimApp:
     def start(self) -> bool:
         """Start the swim lap counting stream; returns False if already running."""
         if self._running:
-            return False
+            # Reset lap counter and idle timeout without starting a new stream
+            if self.detector:
+                self.detector.lap_count = 0
+            # reset idle tracking
+            self._prev_lap_count = 0
+            self._last_lap_time = time.time()
+            logging.info("Lap counter and idle timer reset on existing session")
+            return True
         # Prepare components
         self.client = EufyClient(WEBSOCKET_URL, DEVICE_SERIAL_NUMBER)
         self.decoder = FFmpegDecoder()
