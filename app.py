@@ -38,9 +38,20 @@ class SwimApp:
         print(f"Recording output to: {out_file}")
         self.recorder = VideoRecorder(out_file, fps, (width, height))
         print("Entering main loop. Press Ctrl-C or 'q' to exit.")
+        # Initialize idle shutdown timer: shutdown if no lap detected within 5 minutes
+        last_lap_time = time.time()
+        previous_lap_count = self.detector.lap_count
         try:
             for frame in self.decoder.frames(width, height):
                 out = self.detector.process(frame)
+                # Check for new laps to reset idle timer
+                if self.detector.lap_count > previous_lap_count:
+                    previous_lap_count = self.detector.lap_count
+                    last_lap_time = time.time()
+                # Shutdown if idle for more than 5 minutes
+                elif time.time() - last_lap_time > 5 * 60:
+                    print("No laps detected in the last 5 minutes, shutting down.")
+                    break
                 cv2.putText(
                     out,
                     f"Laps: {self.detector.lap_count}",
